@@ -1,0 +1,45 @@
+cart = []; saveCart(); renderCart(); closeCart();
+}
+
+// ── MODAL ──
+function openModal(id) {
+  const p = products.find(x => x.id === id);
+  currentProduct = p;
+  document.getElementById('modalImg').textContent = p.icon;
+  document.getElementById('modalCat').textContent = p.cat;
+  document.getElementById('modalName').textContent = p.name;
+  document.getElementById('modalDesc').textContent = p.desc;
+  document.getElementById('modalPrice').textContent = p.price.toLocaleString() + ' ₸';
+  document.getElementById('modalAddBtn').onclick = () => { addToCart(p.id); closeModal(); };
+  document.getElementById('productModal').classList.add('active');
+}
+function closeModal() { document.getElementById('productModal').classList.remove('active'); }
+document.getElementById('productModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── TIMER ──
+let timerEnd = Date.now() + 8 * 3600000 + 45 * 60000 + 30000;
+setInterval(() => {
+  const diff = timerEnd - Date.now();
+  if (diff <= 0) { timerEnd = Date.now() + 12 * 3600000; return; }
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('tH').textContent = String(h).padStart(2,'0');
+  document.getElementById('tM').textContent = String(m).padStart(2,'0');
+  document.getElementById('tS').textContent = String(s).padStart(2,'0');
+}, 1000);
+
+// ── INIT ──
+renderProducts(products);
+renderCart();
+</script>
+
+</body>
+</html>
