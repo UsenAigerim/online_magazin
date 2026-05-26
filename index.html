@@ -1,4 +1,766 @@
-cart = []; saveCart(); renderCart(); closeCart();
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAZAQ STORE — Онлайн Магазин</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --white: #f5f0e8;
+    --gray: #888;
+    --border: #222;
+    --red: #e74c3c;
+    --green: #27ae60;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 900;
+    color: var(--gold); letter-spacing: 3px;
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    color: var(--white); text-decoration: none;
+    font-size: 14px; font-weight: 500; letter-spacing: 1px;
+    opacity: 0.7; transition: opacity 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--gold); }
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .cart-btn {
+    position: relative;
+    background: var(--gold); color: #000;
+    border: none; padding: 10px 22px;
+    border-radius: 2px; font-weight: 600;
+    font-size: 14px; cursor: pointer;
+    letter-spacing: 1px; transition: background 0.2s;
+  }
+  .cart-btn:hover { background: var(--gold2); }
+  .cart-count {
+    position: absolute; top: -8px; right: -8px;
+    background: var(--red); color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 60px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(201,168,76,0.12) 0%, transparent 60%);
+  }
+  .hero-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+    max-width: 1300px; margin: 0 auto; width: 100%;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    color: var(--gold); border: 1px solid rgba(201,168,76,0.3);
+    padding: 6px 16px; border-radius: 2px;
+    font-size: 12px; font-weight: 600; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 6vw, 90px);
+    font-weight: 900; line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero p {
+    font-size: 17px; color: var(--gray);
+    line-height: 1.7; margin-bottom: 40px; max-width: 460px;
+  }
+  .hero-btns { display: flex; gap: 16px; }
+  .btn-primary {
+    background: var(--gold); color: #000;
+    padding: 16px 36px; border: none;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold2); transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent; color: var(--white);
+    padding: 16px 36px; border: 1px solid var(--border);
+    font-weight: 500; font-size: 14px;
+    letter-spacing: 2px; cursor: pointer; border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  .hero-visual {
+    position: relative; display: flex;
+    justify-content: center; align-items: center;
+  }
+  .hero-img-wrap {
+    width: 420px; height: 520px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+    border: 1px solid #222; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-img-wrap::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 50%);
+  }
+  .hero-product-icon {
+    font-size: 120px; opacity: 0.6;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-16px); }
+  }
+  .hero-badge {
+    position: absolute; top: 40px; right: -20px;
+    background: var(--gold); color: #000;
+    padding: 12px 20px; border-radius: 2px;
+    font-weight: 700; font-size: 13px;
+  }
+  .hero-stats {
+    position: absolute; bottom: 40px; left: -30px;
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 16px 20px; border-radius: 4px;
+  }
+  .hero-stats .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: var(--gold);
+  }
+  .hero-stats .lbl { font-size: 12px; color: var(--gray); }
+
+  /* ── MARQUEE ── */
+  .marquee {
+    background: var(--gold); color: #000;
+    padding: 14px 0; overflow: hidden;
+  }
+  .marquee-track {
+    display: flex; gap: 60px;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-track span {
+    font-weight: 700; font-size: 13px; letter-spacing: 3px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── CATEGORIES ── */
+  .section { padding: 100px 60px; max-width: 1400px; margin: 0 auto; }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 60px;
+  }
+  .section-tag {
+    font-size: 12px; color: var(--gold); letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px; font-weight: 700;
+  }
+  .see-all {
+    color: var(--gold); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 1px; border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px; cursor: pointer;
+  }
+
+  .cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .cat-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 4px; padding: 36px 24px;
+    cursor: pointer; transition: all 0.25s;
+    text-align: center;
+  }
+  .cat-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+  .cat-icon { font-size: 48px; margin-bottom: 16px; }
+  .cat-name { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+  .cat-count { font-size: 13px; color: var(--gray); }
+
+  /* ── PRODUCTS ── */
+  .products-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .product-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden;
+    transition: all 0.25s; cursor: pointer;
+  }
+  .product-card:hover { border-color: var(--gold); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .product-img {
+    width: 100%; height: 260px;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .badge {
+    position: absolute; top: 16px; left: 16px;
+    background: var(--red); color: #fff;
+    padding: 4px 10px; border-radius: 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  }
+  .badge.new { background: var(--green); }
+  .product-info { padding: 20px; }
+  .product-cat { font-size: 11px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .product-name { font-weight: 600; font-size: 17px; margin-bottom: 6px; line-height: 1.3; }
+  .product-desc { font-size: 13px; color: var(--gray); margin-bottom: 16px; line-height: 1.5; }
+  .product-footer { display: flex; align-items: center; justify-content: space-between; }
+  .price { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--gold); }
+  .old-price { font-size: 14px; color: var(--gray); text-decoration: line-through; margin-left: 8px; }
+  .add-cart {
+    background: var(--gold); color: #000;
+    border: none; padding: 10px 18px;
+    border-radius: 2px; font-weight: 700; font-size: 13px;
+    cursor: pointer; letter-spacing: 1px; transition: all 0.2s;
+  }
+  .add-cart:hover { background: var(--gold2); transform: scale(1.05); }
+
+  /* ── BANNER ── */
+  .promo-banner {
+    margin: 0 60px;
+    background: linear-gradient(135deg, #1a1a0a 0%, var(--bg3) 100%);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px; padding: 80px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: center; position: relative; overflow: hidden;
+  }
+  .promo-banner::before {
+    content: '';
+    position: absolute; right: -100px; top: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+  }
+  .promo-tag { color: var(--gold); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
+  .promo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 20px;
+  }
+  .promo-title span { color: var(--gold); }
+  .promo-desc { color: var(--gray); font-size: 16px; line-height: 1.7; margin-bottom: 32px; }
+  .promo-visual { display: flex; justify-content: center; align-items: center; font-size: 160px; }
+  .timer { display: flex; gap: 16px; margin-bottom: 32px; }
+  .timer-block { text-align: center; }
+  .timer-num {
+    background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold); font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700; width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+  }
+  .timer-label { font-size: 11px; color: var(--gray); margin-top: 6px; letter-spacing: 2px; }
+
+  /* ── CART MODAL ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 2000; display: none;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.active { display: block; }
+  .cart-panel {
+    position: fixed; top: 0; right: -480px; width: 480px; height: 100vh;
+    background: var(--bg2); border-left: 1px solid var(--border);
+    z-index: 2001; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+  }
+  .cart-panel.open { right: 0; }
+  .cart-header {
+    padding: 28px 32px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cart-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; }
+  .close-btn {
+    background: none; border: none; color: var(--white);
+    font-size: 24px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;
+  }
+  .close-btn:hover { opacity: 1; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 24px 32px; }
+  .cart-empty { text-align: center; padding: 60px 0; color: var(--gray); }
+  .cart-empty .empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.4; }
+  .cart-item {
+    display: flex; gap: 16px; padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cart-item-img {
+    width: 72px; height: 72px;
+    background: var(--bg3); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; flex-shrink: 0;
+  }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 600; margin-bottom: 4px; }
+  .cart-item-price { color: var(--gold); font-weight: 600; }
+  .cart-item-controls { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .qty-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--white); width: 28px; height: 28px;
+    border-radius: 2px; cursor: pointer; font-size: 16px;
+    transition: border-color 0.2s; display: flex; align-items: center; justify-content: center;
+  }
+  .qty-btn:hover { border-color: var(--gold); }
+  .qty-num { font-weight: 600; min-width: 20px; text-align: center; }
+  .remove-item { background: none; border: none; color: var(--gray); cursor: pointer; margin-left: auto; font-size: 18px; transition: color 0.2s; }
+  .remove-item:hover { color: var(--red); }
+  .cart-footer { padding: 24px 32px; border-top: 1px solid var(--border); }
+  .cart-total { display: flex; justify-content: space-between; margin-bottom: 20px; }
+  .cart-total span:first-child { color: var(--gray); font-size: 15px; }
+  .cart-total span:last-child { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--gold); font-weight: 700; }
+  .checkout-btn {
+    width: 100%; background: var(--gold); color: #000;
+    border: none; padding: 18px; font-weight: 700;
+    font-size: 15px; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: background 0.2s;
+  }
+  .checkout-btn:hover { background: var(--gold2); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--green); color: #fff;
+    padding: 14px 28px; border-radius: 4px;
+    font-weight: 600; font-size: 14px; z-index: 9999;
+    transition: transform 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 60px; margin-top: 80px;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px;
+  }
+  .footer-brand .logo { font-size: 24px; display: block; margin-bottom: 16px; }
+  .footer-brand p { color: var(--gray); font-size: 14px; line-height: 1.7; max-width: 280px; }
+  .footer-col h4 { font-weight: 600; margin-bottom: 20px; font-size: 14px; letter-spacing: 1px; }
+  .footer-col a { display: block; color: var(--gray); text-decoration: none; font-size: 14px; margin-bottom: 10px; transition: color 0.2s; cursor: pointer; }
+  .footer-col a:hover { color: var(--gold); }
+  .footer-bottom {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 20px 60px; display: flex; justify-content: space-between; align-items: center;
+    color: var(--gray); font-size: 13px;
+  }
+
+  /* ── PRODUCT MODAL ── */
+  .product-modal {
+    position: fixed; inset: 0; z-index: 3000;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+  }
+  .product-modal.active { display: flex; }
+  .modal-box {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; width: 900px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .modal-img {
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 130px; min-height: 400px;
+  }
+  .modal-content { padding: 48px; }
+  .modal-cat { color: var(--gold); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+  .modal-name { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; margin-bottom: 16px; line-height: 1.2; }
+  .modal-desc { color: var(--gray); font-size: 15px; line-height: 1.7; margin-bottom: 24px; }
+  .modal-price { font-family: 'Playfair Display', serif; font-size: 36px; color: var(--gold); font-weight: 700; margin-bottom: 32px; }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--white); width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { border-color: var(--gold); color: var(--gold); }
+  .modal-add { width: 100%; }
+
+  /* SEARCH */
+  .search-wrap { position: relative; }
+  .search-input {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--white); padding: 10px 16px;
+    border-radius: 2px; font-size: 14px; width: 220px;
+    outline: none; transition: border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .search-input:focus { border-color: var(--gold); }
+  .search-input::placeholder { color: var(--gray); }
+
+  /* STARS */
+  .stars { color: var(--gold); font-size: 14px; margin-bottom: 12px; }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .section { padding: 60px 24px; }
+    .cats { grid-template-columns: repeat(2,1fr); }
+    .products-grid { grid-template-columns: repeat(2,1fr); }
+    .promo-banner { margin: 0 24px; padding: 40px 24px; grid-template-columns: 1fr; }
+    .promo-visual { display: none; }
+    footer { grid-template-columns: 1fr 1fr; padding: 40px 24px; }
+    .modal-box { grid-template-columns: 1fr; }
+    .modal-img { min-height: 200px; font-size: 80px; }
+    .cart-panel { width: 100%; right: -100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="logo" href="#">QAZAQ★STORE</a>
+  <ul class="nav-links">
+    <li><a onclick="scrollTo('cats')">Категориялар</a></li>
+    <li><a onclick="scrollTo('products')">Өнімдер</a></li>
+    <li><a onclick="scrollTo('promo')">Акциялар</a></li>
+    <li><a href="#">Байланыс</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="🔍 Іздеу..." id="searchInput" oninput="filterProducts()">
+    </div>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Себет
+      <div class="cart-count" id="cartCount">0</div>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <div class="hero-tag">✦ Жаңа коллекция 2026</div>
+      <h1>Ең жақсы<br><span>сапалы</span><br>тауарлар</h1>
+      <p>Қазақстандағы ең үлкен онлайн дүкен. Мыңдаған өнімдер, тез жеткізу, сенімді сапа.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="scrollTo('products')">Сатып алу →</button>
+        <button class="btn-outline" onclick="scrollTo('cats')">Категориялар</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-img-wrap">
+        <div class="hero-product-icon">🛍️</div>
+        <div class="hero-badge">-30% ЖЕҢІЛДІК</div>
+        <div class="hero-stats">
+          <div class="num">12K+</div>
+          <div class="lbl">Бақытты клиент</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track" id="marqueeTrack">
+    <span>✦ ТЕГІН ЖЕТКІЗУ</span><span>✦ 30 КҮН КЕПІЛДІК</span><span>✦ САПАЛЫ ӨНІМДЕР</span><span>✦ ЖЫЛДАМ ТАПСЫРЫС</span>
+    <span>✦ 24/7 ҚОЛДАУ</span><span>✦ ҚАУІПСІЗ ТӨЛЕМ</span><span>✦ ТЕГІН ҚАЙТАРУ</span><span>✦ БОНУС ЖҮЙЕСІ</span>
+    <span>✦ ТЕГІН ЖЕТКІЗУ</span><span>✦ 30 КҮН КЕПІЛДІК</span><span>✦ САПАЛЫ ӨНІМДЕР</span><span>✦ ЖЫЛДАМ ТАПСЫРЫС</span>
+    <span>✦ 24/7 ҚОЛДАУ</span><span>✦ ҚАУІПСІЗ ТӨЛЕМ</span><span>✦ ТЕГІН ҚАЙТАРУ</span><span>✦ БОНУС ЖҮЙЕСІ</span>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div id="cats">
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-tag">Барлық салалар</div>
+      <div class="section-title">Категориялар</div>
+    </div>
+    <a class="see-all" onclick="filterByCategory('all')">Барлығы →</a>
+  </div>
+  <div class="cats">
+    <div class="cat-card" onclick="filterByCategory('Электроника')">
+      <div class="cat-icon">📱</div>
+      <div class="cat-name">Электроника</div>
+      <div class="cat-count">48 өнім</div>
+    </div>
+    <div class="cat-card" onclick="filterByCategory('Киім')">
+      <div class="cat-icon">👕</div>
+      <div class="cat-name">Киім</div>
+      <div class="cat-count">124 өнім</div>
+    </div>
+    <div class="cat-card" onclick="filterByCategory('Үй')">
+      <div class="cat-icon">🏠</div>
+      <div class="cat-name">Үй & Бақша</div>
+      <div class="cat-count">67 өнім</div>
+    </div>
+    <div class="cat-card" onclick="filterByCategory('Спорт')">
+      <div class="cat-icon">⚽</div>
+      <div class="cat-name">Спорт</div>
+      <div class="cat-count">89 өнім</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="products">
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-tag">Таңдаулы өнімдер</div>
+      <div class="section-title" id="productsTitle">Барлық өнімдер</div>
+    </div>
+    <a class="see-all" onclick="filterByCategory('all')">Барлығын көру →</a>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</div>
+</div>
+
+<!-- PROMO BANNER -->
+<div id="promo">
+<div class="promo-banner">
+  <div>
+    <div class="promo-tag">⚡ Шектеулі ұсыныс</div>
+    <div class="promo-title">Бүгін ғана<br><span>-40%</span><br>жеңілдік!</div>
+    <div class="promo-desc">Ерекше акция — барлық электроника өнімдеріне үлкен жеңілдік. Уақытты жіберіп алмаңыз!</div>
+    <div class="timer">
+      <div class="timer-block"><div class="timer-num" id="tH">08</div><div class="timer-label">САҒАТ</div></div>
+      <div class="timer-block"><div class="timer-num" id="tM">45</div><div class="timer-label">МИНУТ</div></div>
+      <div class="timer-block"><div class="timer-num" id="tS">30</div><div class="timer-label">СЕКУНД</div></div>
+    </div>
+    <button class="btn-primary" onclick="filterByCategory('Электроника'); scrollTo('products')">Акция өнімдері →</button>
+  </div>
+  <div class="promo-visual">⚡</div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <span class="logo">QAZAQ★STORE</span>
+    <p>Қазақстандағы ең сенімді онлайн дүкен. Сапалы өнімдер, тез жеткізу, кепілдік.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Магазин</h4>
+    <a href="#">Өнімдер</a>
+    <a href="#">Акциялар</a>
+    <a href="#">Жаңалықтар</a>
+    <a href="#">Брендтер</a>
+  </div>
+  <div class="footer-col">
+    <h4>Ақпарат</h4>
+    <a href="#">Бізтуралы</a>
+    <a href="#">Жеткізу</a>
+    <a href="#">Қайтару</a>
+    <a href="#">FAQ</a>
+  </div>
+  <div class="footer-col">
+    <h4>Байланыс</h4>
+    <a href="#">+7 (700) 123-45-67</a>
+    <a href="#">info@qazaqstore.kz</a>
+    <a href="#">Алматы, Казахстан</a>
+    <a href="#">Instagram</a>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2026 QAZAQ STORE — Барлық құқықтар қорғалған</span>
+  <span>🔒 Қауіпсіз төлем · Visa · Mastercard · Kaspi</span>
+</div>
+
+<!-- CART PANEL -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>🛒 Себет</h2>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Жалпы сома:</span>
+      <span id="cartTotal">0 ₸</span>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Тапсырыс беру →</button>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="product-modal" id="productModal">
+  <div class="modal-box" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-img" id="modalImg"></div>
+    <div class="modal-content">
+      <div class="modal-cat" id="modalCat"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="stars">★★★★★</div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <button class="add-cart btn-primary modal-add" id="modalAddBtn">Себетке қосу 🛒</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Себетке қосылды!</div>
+
+<script>
+// ── DATA ──
+const products = [
+  { id:1, name:'iPhone 15 Pro', cat:'Электроника', price:599000, old:750000, icon:'📱', desc:'A17 Pro чип, титан корпус, 48MP камера. Ең жаңа технология.', badge:'ЖАҢА' },
+  { id:2, name:'Samsung 4K TV 55"', cat:'Электроника', price:289000, old:350000, icon:'📺', desc:'Crystal UHD дисплей, Smart TV, Dolby Audio. Үй кинотеатры.', badge:'-17%' },
+  { id:3, name:'Nike Air Max 2026', cat:'Спорт', price:45000, old:60000, icon:'👟', desc:'Ең жаңа Nike коллекциясы. Жеңіл, ыңғайлы, стильді.', badge:'-25%' },
+  { id:4, name:'Смарт сағат Pro', cat:'Электроника', price:89000, old:null, icon:'⌚', desc:'GPS, денсаулық мониторингі, 7 күн заряд. Премиум класс.', badge:'ЖАҢА' },
+  { id:5, name:'Кожаная куртка', cat:'Киім', price:35000, old:48000, icon:'🧥', desc:'100% натуральды тері. Классикалық дизайн, ұзақ мерзімді.', badge:'-27%' },
+  { id:6, name:'Кофемашина Deluxe', cat:'Үй', price:125000, old:160000, icon:'☕', desc:'Автоматты кофемашина. 15 бар қысым, сүт көбігі, 3 рецепт.', badge:'-22%' },
+  { id:7, name:'AirPods Pro 3', cat:'Электроника', price:79000, old:null, icon:'🎧', desc:'Шу өшіру технологиясы, 6 сағат заряд, H2 чип.', badge:'ЖАҢА' },
+  { id:8, name:'Футбол допы Pro', cat:'Спорт', price:12000, old:15000, icon:'⚽', desc:'FIFA стандарты, ресми өлшем, premium резеңке.', badge:'-20%' },
+  { id:9, name:'Смарт холодильник', cat:'Үй', price:380000, old:420000, icon:'❄️', desc:'Wi-Fi басқару, No-Frost, A++ энергия тиімділігі.', badge:'-10%' },
+];
+
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let filtered = [...products];
+let currentProduct = null;
+
+// ── RENDER PRODUCTS ──
+function renderProducts(list) {
+  const grid = document.getElementById('productsGrid');
+  if (!list.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray)">Өнім табылмады 😔</div>'; return; }
+  grid.innerHTML = list.map(p => `
+    <div class="product-card" onclick="openModal(${p.id})">
+      <div class="product-img">
+        <span>${p.icon}</span>
+        ${p.badge ? `<div class="badge${p.badge==='ЖАҢА'?' new':''}">${p.badge}</div>` : ''}
+      </div>
+      <div class="product-info">
+        <div class="product-cat">${p.cat}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-footer">
+          <div>
+            <span class="price">${p.price.toLocaleString()} ₸</span>
+            ${p.old ? `<span class="old-price">${p.old.toLocaleString()} ₸</span>` : ''}
+          </div>
+          <button class="add-cart" onclick="event.stopPropagation(); addToCart(${p.id})">+ Себет</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterByCategory(cat) {
+  filtered = cat === 'all' ? [...products] : products.filter(p => p.cat === cat);
+  document.getElementById('productsTitle').textContent = cat === 'all' ? 'Барлық өнімдер' : cat;
+  renderProducts(filtered);
+  document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+}
+
+function filterProducts() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = q ? products.filter(p => p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)) : filtered;
+  renderProducts(list);
+}
+
+function scrollTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+
+// ── CART ──
+function addToCart(id) {
+  const p = products.find(x => x.id === id);
+  const ex = cart.find(x => x.id === id);
+  if (ex) ex.qty++;
+  else cart.push({ ...p, qty: 1 });
+  saveCart(); renderCart(); showToast('✓ ' + p.name + ' себетке қосылды!');
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(x => x.id !== id);
+  saveCart(); renderCart();
+}
+
+function changeQty(id, d) {
+  const item = cart.find(x => x.id === id);
+  if (!item) return;
+  item.qty += d;
+  if (item.qty <= 0) removeFromCart(id);
+  else { saveCart(); renderCart(); }
+}
+
+function saveCart() { localStorage.setItem('cart', JSON.stringify(cart)); }
+
+function renderCart() {
+  const total = cart.reduce((s, x) => s + x.price * x.qty, 0);
+  document.getElementById('cartCount').textContent = cart.reduce((s,x) => s+x.qty, 0);
+  document.getElementById('cartTotal').textContent = total.toLocaleString() + ' ₸';
+  const el = document.getElementById('cartItems');
+  if (!cart.length) {
+    el.innerHTML = '<div class="cart-empty"><div class="empty-icon">🛒</div><div>Себет бос</div></div>';
+    return;
+  }
+  el.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-img">${item.icon}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${(item.price * item.qty).toLocaleString()} ₸</div>
+        <div class="cart-item-controls">
+          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+          <button class="remove-item" onclick="removeFromCart(${item.id})">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openCart() {
+  document.getElementById('cartPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
+}
+function closeCart() {
+  document.getElementById('cartPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function checkout() {
+  if (!cart.length) { showToast('⚠ Себет бос!'); return; }
+  showToast('🎉 Тапсырысыңыз қабылданды! Рақмет!');
+  cart = []; saveCart(); renderCart(); closeCart();
 }
 
 // ── MODAL ──
@@ -40,6 +802,5 @@ setInterval(() => {
 renderProducts(products);
 renderCart();
 </script>
-
 </body>
 </html>
